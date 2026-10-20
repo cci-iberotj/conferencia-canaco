@@ -167,7 +167,7 @@ def main():
 
     print('  rama actualizada a %s' % padre[:7])
     print('  La publicación arranca sola; tarda cerca de un minuto.')
-    print('  https://cci-iberotj.github.io/convocatoria-imagen/\n')
+    print('  https://cci-iberotj.github.io/conferencia-canaco/\n')
 
 
 if __name__ == '__main__':
