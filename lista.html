@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los 25 · Conferencias CANACO · IBERO Tijuana</title>
+<link rel="stylesheet" href="tipografia.css">
+<link rel="stylesheet" href="estilos.css">
+<style>
+/* ── La lista del equipo ──────────────────────────────────
+   Sólo con cuenta de LA PIZARRA: la tabla no deja leer a nadie
+   más. Sirve para pasar la lista a CANACO y para palomear en la
+   puerta el día del evento. */
+.hoja.ancha{max-width:900px}
+.entrar{max-width:360px;margin:12vh auto;background:var(--papel);border-radius:18px;
+  padding:26px 24px;border:1px solid var(--linea)}
+.entrar h1{font-size:25px;margin-bottom:4px}
+.entrar p{font-size:14px;color:var(--tinta-tenue);margin-bottom:18px}
+.arriba{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+  flex-wrap:wrap;margin-bottom:18px}
+.arriba h1{font-size:28px;margin:0}
+.arriba .sub{font-size:13.5px;color:var(--tinta-tenue)}
+.barras{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+.btn{font:inherit;font-size:14px;cursor:pointer;background:var(--papel);
+  border:1px solid var(--linea);border-radius:10px;padding:8px 14px;color:var(--tinta-media)}
+.btn:hover{border-color:var(--rojo);color:var(--vino)}
+.cuenta{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;
+  margin-bottom:18px}
+.dato{background:var(--papel);border:1px solid var(--linea);border-radius:12px;padding:12px 14px}
+.dato .n{font-family:var(--titulos);font-size:30px;font-weight:700;line-height:1}
+.dato .q{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tinta-tenue)}
+table{width:100%;border-collapse:collapse;background:var(--papel);border-radius:12px;
+  overflow:hidden;font-size:14px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--tinta-tenue);padding:10px;border-bottom:1px solid var(--linea)}
+td{padding:10px;border-bottom:1px solid var(--linea);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.vino td{background:var(--ok-velo)}
+td.lug{font-family:var(--titulos);font-weight:700;font-size:17px;width:40px;color:var(--rojo)}
+td a{color:var(--vino)}
+.chi{font-size:12.5px;color:var(--tinta-tenue)}
+.pal{font:inherit;cursor:pointer;background:none;border:1px solid var(--linea);
+  border-radius:8px;padding:4px 9px;font-size:12.5px;color:var(--tinta-media);white-space:nowrap}
+.pal.si{background:var(--ok-velo);border-color:var(--ok);color:var(--ok);font-weight:700}
+.vacio{background:var(--papel);border-radius:14px;padding:34px;text-align:center;
+  color:var(--tinta-tenue)}
+@media (max-width:620px){ .ocultar{display:none} }
+</style>
+</head>
+<body>
+<div class="hoja ancha" id="todo"><p class="vacio">Cargando…</p></div>
+
+<script src="config.js"></script>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const BASE = CONFIG.supabase.url, LLAVE = CONFIG.supabase.llave;
+const TABLA = CONFIG.supabase.tabla, GUARDADA = 'canaco-sesion';
+let TODOS = [];
+
+/* ───────── la sesión (la misma cuenta de LA PIZARRA) ───────── */
+const Sesion = {
+  leer(){ try { return JSON.parse(localStorage.getItem(GUARDADA) || 'null'); } catch(e){ return null; } },
+  guardar(s){ s ? localStorage.setItem(GUARDADA, JSON.stringify(s)) : localStorage.removeItem(GUARDADA); },
+  async entrar(correo, clave){
+    const r = await fetch(BASE + '/auth/v1/token?grant_type=password', {
+      method:'POST', headers:{ apikey: LLAVE, 'Content-Type':'application/json' },
+      body: JSON.stringify({ email: correo.trim(), password: clave }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(r.status === 400 ? 'Correo o contraseña incorrectos.'
+                                                : (d.msg || d.error_description || 'Error ' + r.status));
+    this.guardar({ acceso:d.access_token, refresco:d.refresh_token,
+                   expira: Date.now() + (d.expires_in || 3600)*1000, correo: d.user && d.user.email });
+  },
+  async token(){
+    const s = this.leer();
+    if (!s) return null;
+    if (Date.now() < s.expira - 60000) return s.acceso;
+    try {
+      const r = await fetch(BASE + '/auth/v1/token?grant_type=refresh_token', {
+        method:'POST', headers:{ apikey: LLAVE, 'Content-Type':'application/json' },
+        body: JSON.stringify({ refresh_token: s.refresco }) });
+      if (!r.ok) throw 0;
+      const d = await r.json();
+      this.guardar({ acceso:d.access_token, refresco:d.refresh_token,
+                     expira: Date.now() + (d.expires_in || 3600)*1000, correo: s.correo });
+      return d.access_token;
+    } catch(e){ this.guardar(null); return null; }
+  },
+  salir(){ this.guardar(null); location.reload(); },
+};
+
+async function pedir(ruta, op = {}){
+  const t = await Sesion.token();
+  if (!t) throw new Error('SIN_SESION');
+  const r = await fetch(BASE + '/rest/v1' + ruta, {
+    method: op.method || 'GET',
+    headers: Object.assign({ apikey: LLAVE, Authorization: 'Bearer ' + t,
+                             'Content-Type':'application/json' }, op.headers || {}),
+    body: op.body ? JSON.stringify(op.body) : undefined });
+  if (r.status === 401){ Sesion.guardar(null); throw new Error('SIN_SESION'); }
+  if (r.status === 204) return null;
+  const d = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((d && (d.message || d.hint)) || ('Error ' + r.status));
+  return d;
+}
+
+/* ───────── pantallas ───────── */
+function pedirEntrar(malo){
+  $('#todo').innerHTML =
+    '<div class="entrar"><h1>Los 25</h1>' +
+    '<p>Conferencias CANACO · entra con tu cuenta de LA PIZARRA.</p>' +
+    '<form id="f"><div class="campo"><label for="c">Correo</label>' +
+    '<input id="c" type="email" autocomplete="username"></div>' +
+    '<div class="campo" style="margin-top:12px"><label for="p">Contraseña</label>' +
+    '<input id="p" type="password" autocomplete="current-password"></div>' +
+    '<div class="falla' + (malo ? ' visible' : '') + '" id="m" style="margin-top:12px">' +
+      (malo || '') + '</div>' +
+    '<button class="ir" style="width:100%;margin-top:14px" id="b">Entrar</button></form></div>';
+  $('#f').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('#b').disabled = true; $('#b').textContent = 'Entrando…';
+    try { await Sesion.entrar($('#c').value, $('#p').value); pintar(); }
+    catch (err){ pedirEntrar(err.message); }
+  });
+}
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function pintar(){
+  try {
+    TODOS = await pedir('/' + TABLA + '?select=*&order=lugar.asc');
+  } catch (e){
+    if (e.message === 'SIN_SESION') return pedirEntrar();
+    $('#todo').innerHTML = '<p class="vacio">No se pudo cargar: ' + esc(e.message) + '</p>';
+    return;
+  }
+  dibujar();
+}
+
+function dibujar(){
+  const e = CONFIG.evento;
+  const vivos = TODOS.filter(x => x.estado !== 'cancelado');
+  const vinieron = TODOS.filter(x => x.estado === 'asistio').length;
+  const libres = Math.max(0, CONFIG.cupo - vivos.length);
+  const s = Sesion.leer();
+
+  $('#todo').innerHTML =
+    '<div class="arriba"><div><h1>Los 25</h1>' +
+      '<div class="sub">' + esc(e.titulo) + ' · ' + esc(e.fechaDicha) + ' · ' + esc(e.lugar) + '</div></div>' +
+      '<div class="sub">' + esc(s && s.correo || '') +
+      ' <button class="btn" id="salir">Salir</button></div></div>' +
+    '<div class="cuenta">' +
+      '<div class="dato"><div class="n">' + vivos.length + '</div><div class="q">registrados</div></div>' +
+      '<div class="dato"><div class="n">' + libres + '</div><div class="q">lugares libres</div></div>' +
+      '<div class="dato"><div class="n">' + vinieron + '</div><div class="q">ya llegaron</div></div>' +
+    '</div>' +
+    '<div class="barras">' +
+      '<button class="btn" id="recargar">Actualizar</button>' +
+      '<button class="btn" id="csv">Bajar lista (CSV)</button>' +
+      '<button class="btn" id="copiar">Copiar para CANACO</button>' +
+    '</div>' +
+    (vivos.length ? tabla(TODOS) : '<p class="vacio">Todavía no se registra nadie.</p>');
+
+  $('#salir').addEventListener('click', () => Sesion.salir());
+  $('#recargar').addEventListener('click', pintar);
+  $('#csv').addEventListener('click', bajarCSV);
+  $('#copiar').addEventListener('click', copiarParaCanaco);
+  document.querySelectorAll('[data-pal]').forEach(b =>
+    b.addEventListener('click', () => palomear(b.dataset.pal, b)));
+}
+
+function tabla(filas){
+  return '<table><thead><tr><th></th><th>Quién</th><th class="ocultar">Carrera</th>' +
+    '<th class="ocultar">Contacto</th><th>Llegó</th></tr></thead><tbody>' +
+    filas.map(p => {
+      const vino = p.estado === 'asistio';
+      return '<tr class="' + (vino ? 'vino' : '') + '">' +
+        '<td class="lug">' + (p.lugar || '·') + '</td>' +
+        '<td><b>' + esc(p.nombre) + '</b><div class="chi">' + esc(p.matricula) +
+          ' · ' + esc(p.semestre) + '°' +
+          (p.estado === 'cancelado' ? ' · <b>canceló</b>' : '') + '</div></td>' +
+        '<td class="ocultar chi">' + esc(p.carrera) + '</td>' +
+        '<td class="ocultar chi"><a href="mailto:' + esc(p.correo) + '">' + esc(p.correo) + '</a>' +
+          '<div><a href="https://wa.me/52' + esc(p.telefono) + '" target="_blank" rel="noopener">' +
+          esc(p.telefono) + '</a></div></td>' +
+        '<td><button class="pal' + (vino ? ' si' : '') + '" data-pal="' + esc(p.folio) + '">' +
+          (vino ? '✓ sí' : 'marcar') + '</button></td>' +
+      '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function palomear(folio, boton){
+  const p = TODOS.find(x => x.folio === folio);
+  if (!p) return;
+  const nuevo = p.estado === 'asistio' ? 'registrado' : 'asistio';
+  boton.disabled = true;
+  try {
+    await pedir('/' + TABLA + '?folio=eq.' + encodeURIComponent(folio),
+                { method:'PATCH', body:{ estado: nuevo } });
+    p.estado = nuevo;
+    dibujar();
+  } catch (err){
+    boton.disabled = false;
+    if (err.message === 'SIN_SESION') return pedirEntrar();
+    alert('No se pudo marcar: ' + err.message);
+  }
+}
+
+function bajarCSV(){
+  const campos = ['lugar','nombre','matricula','carrera','semestre','correo','telefono','estado','creado'];
+  const tit = ['Lugar','Nombre','Matrícula','Carrera','Semestre','Correo','Teléfono','Estado','Se registró'];
+  const q = v => { const s = v == null ? '' : String(v);
+                   return /[",\n;]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; };
+  const txt = [tit.join(';')].concat(
+    TODOS.map(p => campos.map(c => q(p[c])).join(';'))).join('\r\n');
+  const a = document.createElement('a');
+  /* El BOM es para que Excel en Windows abra los acentos bien. */
+  a.href = URL.createObjectURL(new Blob(['﻿' + txt], { type:'text/csv;charset=utf-8' }));
+  a.download = 'conferencias-canaco-' + CONFIG.evento.fecha + '.csv';
+  a.click();
+}
+
+/* Lo que CANACO necesita en la puerta: nombre y nada más. */
+function copiarParaCanaco(){
+  const txt = TODOS.filter(p => p.estado !== 'cancelado')
+    .map(p => (p.lugar || '·') + '. ' + p.nombre).join('\n');
+  navigator.clipboard.writeText(
+    'Estudiantes de IBERO Tijuana · ' + CONFIG.evento.titulo + '\n' +
+    CONFIG.evento.fechaDicha + ', ' + CONFIG.evento.horaDicha + '\n\n' + txt)
+    .then(() => alert('Lista copiada. Ya la puedes pegar en el correo.'))
+    .catch(() => alert('No se pudo copiar; usa el CSV.'));
+}
+
+(async function(){ Sesion.leer() ? pintar() : pedirEntrar(); })();
+</script>
+</body>
+</html>

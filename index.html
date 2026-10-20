@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regístrate · Conferencias Empresariales CANACO · IBERO Tijuana</title>
+<meta name="description" content="25 lugares para estudiantes de IBERO Tijuana en las Conferencias Empresariales de CANACO con Ninfa Salinas Sada.">
+<meta name="theme-color" content="#EA242F">
+<link rel="stylesheet" href="tipografia.css">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<div class="hoja" id="hoja">
+
+  <div class="marcas">
+    <div class="ibero">IBERO<small>TIJUANA</small></div>
+    <div class="invita"><b id="invita">CANACO Tijuana</b>te invita</div>
+  </div>
+
+  <h1 id="titulo">Conferencias <em>Empresariales</em></h1>
+  <p class="con">con <b id="con">Ninfa Salinas Sada</b></p>
+
+  <div class="cuando">
+    <div><span class="et">Cuándo</span><b id="cuando"></b></div>
+    <div><span class="et">Hora</span><b id="hora"></b></div>
+    <div><span class="et">Dónde</span><b id="donde"></b></div>
+  </div>
+
+  <p class="aviso" id="aviso"></p>
+
+  <div class="lugares" id="lugares">
+    <div class="n" id="quedan">··</div>
+    <div class="q" style="flex:1">
+      <b id="quedanTexto">Cargando lugares…</b>
+      <span id="quedanPie"></span>
+      <div class="barra"><i id="barra" style="width:0%"></i></div>
+    </div>
+  </div>
+
+  <!-- ── el formulario ── -->
+  <form id="forma" novalidate hidden>
+    <div class="campo" id="c_nombre">
+      <label for="nombre">Tu nombre completo</label>
+      <input id="nombre" name="nombre" type="text" autocomplete="name" maxlength="120">
+      <span class="error">Escribe tu nombre completo.</span>
+    </div>
+
+    <div class="dos">
+      <div class="campo" id="c_matricula">
+        <label for="matricula">Matrícula</label>
+        <input id="matricula" name="matricula" type="text" inputmode="numeric" maxlength="20">
+        <span class="error">Falta tu matrícula.</span>
+      </div>
+      <div class="campo" id="c_semestre">
+        <label for="semestre">Semestre</label>
+        <select id="semestre" name="semestre"></select>
+        <span class="error">Elige tu semestre.</span>
+      </div>
+    </div>
+
+    <div class="campo" id="c_carrera">
+      <label for="carrera">Carrera</label>
+      <select id="carrera" name="carrera"></select>
+      <span class="error">Elige tu carrera.</span>
+    </div>
+
+    <div class="campo" id="c_correo">
+      <label for="correo">Correo</label>
+      <input id="correo" name="correo" type="email" autocomplete="email" maxlength="120"
+             placeholder="tu correo institucional">
+      <span class="error">Revisa tu correo: algo no cuadra.</span>
+    </div>
+
+    <div class="campo" id="c_telefono">
+      <label for="telefono">WhatsApp</label>
+      <input id="telefono" name="telefono" type="tel" inputmode="numeric"
+             autocomplete="tel" maxlength="20" placeholder="10 dígitos">
+      <span class="pista">Por si hay un cambio de última hora.</span>
+      <span class="error">Son 10 dígitos, sin lada de país.</span>
+    </div>
+
+    <label class="acepto" id="c_acepto">
+      <input type="checkbox" id="acepto">
+      <span>Sí voy a ir. Si al final no puedo, aviso para que alguien más
+            ocupe mi lugar.</span>
+    </label>
+
+    <div class="falla" id="falla"></div>
+
+    <button type="submit" class="ir" id="enviar">Apartar mi lugar</button>
+  </form>
+
+  <!-- ── ya quedaste / ya no hay ── -->
+  <div id="final"></div>
+
+  <p class="pie" id="pie"></p>
+</div>
+
+<script src="config.js"></script>
+<script src="formulario.js"></script>
+</body>
+</html>
