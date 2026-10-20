@@ -40,7 +40,7 @@ function pintarEvento(){
   if (e.aviso) av.textContent = e.aviso; else av.remove();
 
   $('#pie').innerHTML =
-    '¿Algo no jala? Escríbenos a <a href="mailto:' + CONFIG.contacto.correo + '">' +
+    '¿Tienes alguna duda? Escríbenos a <a href="mailto:' + CONFIG.contacto.correo + '">' +
     CONFIG.contacto.correo + '</a><br>' + CONFIG.contacto.area + ' · IBERO Tijuana';
 
   const sem = $('#semestre');
@@ -78,7 +78,7 @@ function yaPaso(){
         '<path d="M12 7.5V12l3 2"/></svg></div>' +
       '<h2>El registro ya cerró</h2>' +
       '<p>Las Conferencias Empresariales fueron el ' + e.fechaDicha + '.</p>' +
-      '<p>Lo que venga después lo anunciamos en las redes de la IBERO.</p>' +
+      '<p>Los próximos eventos se anuncian en las redes de la IBERO.</p>' +
     '</div>';
 }
 
@@ -128,11 +128,9 @@ function revisar(){
   if (!(d.semestre >= 1 && d.semestre <= 12)) mal.push('c_semestre');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(d.correo)) mal.push('c_correo');
   if (d.telefono.length !== 10) mal.push('c_telefono');
-  if (!$('#acepto').checked) mal.push('c_acepto');
 
   ['c_nombre','c_matricula','c_carrera','c_semestre','c_correo','c_telefono']
     .forEach(id => $('#' + id).classList.toggle('mal', mal.includes(id)));
-  $('#c_acepto').style.color = mal.includes('c_acepto') ? 'var(--rojo)' : '';
 
   return { datos: d, mal };
 }
@@ -147,17 +145,17 @@ function yaQuedaste(d, lugar, folio){
       '<div class="sello"><svg viewBox="0 0 24 24"><path d="M4 12.5l5.5 5.5L20 7"/></svg></div>' +
       '<h2>Tu lugar está apartado</h2>' +
       /* horaDicha ya trae su punto ('4:00 p.m.'), no se le pone otro. */
-      '<p>Nos vemos en ' + e.lugar + ', ' + e.fechaDicha + ' a las ' + e.horaDicha +
+      '<p>Te esperamos en ' + e.lugar + ', ' + e.fechaDicha + ' a las ' + e.horaDicha +
         (/[.!?]$/.test(e.horaDicha) ? '' : '.') + '</p>' +
       '<div class="tuLugar">' + lugar + '</div>' +
-      '<p>eres el lugar ' + lugar + ' de ' + CONFIG.cupo + '</p>' +
+      '<p>Lugar ' + lugar + ' de ' + CONFIG.cupo + '</p>' +
       '<div class="folio">' + folio + '</div>' +
       '<div class="recuerda">' +
-        '<div><b>Llega 15 minutos antes.</b> El cupo es cerrado y el registro se ' +
-          'revisa en la entrada.</div>' +
+        '<div><b>Llega 15 minutos antes.</b> El registro se revisa en la ' +
+          'entrada.</div>' +
         '<div><b>Lleva tu credencial</b> de la IBERO.</div>' +
-        '<div><b>Si ya no puedes ir, avísanos.</b> Hay quien se queda sin lugar ' +
-          'y tu espacio le sirve: ' + CONFIG.contacto.correo + '</div>' +
+        '<div><b>Si no puedes asistir, avísanos.</b> El cupo es limitado y tu lugar ' +
+          'puede reasignarse: ' + CONFIG.contacto.correo + '</div>' +
       '</div>' +
     '</div>';
   $('#final').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -170,11 +168,11 @@ function yaNoHay(){
     '<div class="final no">' +
       '<div class="sello"><svg viewBox="0 0 24 24"><path d="M12 7v7M12 17.5v.5"/>' +
         '<circle cx="12" cy="12" r="9"/></svg></div>' +
-      '<h2>Ya se llenó</h2>' +
-      '<p>Los ' + CONFIG.cupo + ' lugares para la IBERO ya están tomados. ' +
-        'Gracias por querer ir.</p>' +
-      '<p>Si se libera alguno te avisamos por aquí mismo, y lo que venga ' +
-        'después lo anunciamos en las redes de la IBERO.</p>' +
+      '<h2>Cupo lleno</h2>' +
+      '<p>Los ' + CONFIG.cupo + ' lugares asignados a la IBERO ya fueron ' +
+        'ocupados. Gracias por tu interés.</p>' +
+      '<p>Si se libera alguno lo publicaremos aquí. Los próximos eventos se ' +
+        'anuncian en las redes de la IBERO.</p>' +
     '</div>';
 }
 
@@ -187,7 +185,7 @@ async function mandar(ev){
 
   const { datos, mal } = revisar();
   if (mal.length && !CONFIG.modoPrueba){
-    falla.textContent = 'Falta algo arriba. Revisa lo marcado en rojo.';
+    falla.textContent = 'Revisa los campos marcados en rojo.';
     falla.classList.add('visible');
     $('.' + 'campo.mal') && $('.campo.mal').scrollIntoView({ behavior:'smooth', block:'center' });
     return;
@@ -265,7 +263,8 @@ async function mandar(ev){
        base decide al guardar. */
     $('#quedan').textContent = '·';
     $('#quedanTexto').textContent = 'Cupo limitado a ' + CONFIG.cupo + ' lugares';
-    $('#quedanPie').textContent = 'No pudimos leer cuántos quedan; inténtalo y te decimos.';
+    $('#quedanPie').textContent = 'No fue posible consultar la disponibilidad. '
+      + 'Puedes intentar registrarte.';
     $('#forma').hidden = false;
   }
 })();

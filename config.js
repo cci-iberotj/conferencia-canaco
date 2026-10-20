@@ -30,7 +30,7 @@ const CONFIG = {
     horaDicha: '4:00 p.m.',
     lugar:    'CANACO Tijuana',
     /* Se enseña como aviso arriba del formulario. Vacío = no sale. */
-    aviso:    'El evento es fuera del campus, en las instalaciones de CANACO Tijuana. El traslado corre por tu cuenta.',
+    aviso:    'El evento se realiza fuera del campus, en las instalaciones de CANACO Tijuana. El traslado es por cuenta de cada asistente.',
 
     /* Cuándo deja de aceptar registros. Al llegar esta hora el
        formulario se cierra solo, aunque queden lugares: si no, el
