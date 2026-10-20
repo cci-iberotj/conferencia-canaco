@@ -60,6 +60,28 @@ function pintarEvento(){
   }
 }
 
+/* ¿Ya pasó la hora? Se compara con el reloj de quien abre la
+   página, que para esto alcanza: no hay que ser exactos al minuto,
+   hay que no seguir abiertos al día siguiente. */
+function yaCerro(){
+  const c = CONFIG.evento.cierra;
+  return !!c && new Date() >= new Date(c);
+}
+
+function yaPaso(){
+  const e = CONFIG.evento;
+  $('#forma').hidden = true;
+  $('#lugares').hidden = true;
+  $('#final').innerHTML =
+    '<div class="final no">' +
+      '<div class="sello"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/>' +
+        '<path d="M12 7.5V12l3 2"/></svg></div>' +
+      '<h2>El registro ya cerró</h2>' +
+      '<p>Las Conferencias Empresariales fueron el ' + e.fechaDicha + '.</p>' +
+      '<p>Lo que venga después lo anunciamos en las redes de la IBERO.</p>' +
+    '</div>';
+}
+
 /* ───────── cuántos lugares quedan ───────── */
 async function lugaresLibres(){
   const r = await fetch(REST + 'rpc/' + CONFIG.supabase.contador,
@@ -229,6 +251,8 @@ async function mandar(ev){
   $('#telefono').addEventListener('input', e => {
     e.target.value = soloDigitos(e.target.value).slice(0, 10);
   });
+
+  if (yaCerro() && !CONFIG.modoPrueba) return yaPaso();
 
   try {
     const n = await lugaresLibres();

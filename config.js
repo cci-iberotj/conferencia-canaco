@@ -31,6 +31,12 @@ const CONFIG = {
     lugar:    'CANACO Tijuana',
     /* Se enseña como aviso arriba del formulario. Vacío = no sale. */
     aviso:    'El evento es fuera del campus, en las instalaciones de CANACO Tijuana. El traslado corre por tu cuenta.',
+
+    /* Cuándo deja de aceptar registros. Al llegar esta hora el
+       formulario se cierra solo, aunque queden lugares: si no, el
+       lunes siguiente seguiría apuntando gente a algo que ya pasó.
+       Vacío = no se cierra por fecha, sólo cuando se llena. */
+    cierra:   '2026-10-22T16:00',
   },
 
   /* ── El cupo ───────────────────────────────────────────
