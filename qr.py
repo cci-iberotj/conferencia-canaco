@@ -72,12 +72,38 @@ def sobre_blanco(im):
     return fondo
 
 
+OFICIAL = (pathlib.Path(r"C:\Users\leonardo.gonzalez\Documents\IBERO - DG")
+           / "2026" / "00_RECURSOS" / "Logos" / "IBEROTijuana_LOGO.pdf")
+
+
+def membrete(ancho):
+    """El logotipo OFICIAL en blanco dentro de su caja roja.
+
+    Sale del PDF vectorial de 00_RECURSOS, rasterizado al tamaño que
+    hace falta: no es un dibujo parecido, es el archivo bueno. Va
+    entero, sin recortes ni reacomodos.
+    """
+    import fitz
+    pg = fitz.open(OFICIAL)[0]                  # página 1 = versión blanca
+    esc = ancho / pg.rect.width
+    pm = pg.get_pixmap(matrix=fitz.Matrix(esc, esc), alpha=True)
+    logo = Image.frombytes("RGBA", (pm.width, pm.height), pm.samples)
+    pad = int(ancho * 0.11)
+    caja = Image.new("RGB", (ancho + pad * 2, logo.height + pad * 2), ROJO)
+    caja.paste(logo, (pad, pad), logo)
+    return caja
+
+
 def tarjeta(im):
-    """El QR con el texto debajo, para mandar por WhatsApp o redes."""
-    an, al = 1200, 1560
+    """El QR con el membrete y el texto, para WhatsApp o redes."""
+    an, al = 1200, 1700
     t = Image.new("RGB", (an, al), BLANCO)
+
+    logo = membrete(230)
+    t.paste(logo, ((an - logo.width) // 2, 60))
+
     q = sobre_blanco(im).resize((980, 980), Image.LANCZOS)
-    t.paste(q, ((an - 980) // 2, 70))
+    t.paste(q, ((an - 980) // 2, 60 + logo.height + 46))
 
     d = ImageDraw.Draw(t)
     try:
@@ -91,12 +117,12 @@ def tarjeta(im):
         w = d.textbbox((0, 0), txt, font=fuente)[2]
         d.text(((an - w) / 2, y), txt, font=fuente, fill=color)
 
-    centrado("Aparta tu lugar", 1090, gorda, (25, 23, 19))
-    centrado("Conferencias Empresariales · CANACO", 1178, normal, (70, 63, 56))
-    centrado("22 de octubre · 4:00 p.m.", 1234, normal, (70, 63, 56))
-    d.rounded_rectangle([(an - 620) / 2, 1320, (an + 620) / 2, 1400], radius=40, fill=ROJO)
-    centrado("Sólo 25 lugares", 1338, normal, BLANCO)
-    centrado("tijuana.ibero.mx", 1452, chica, (101, 92, 84))
+    centrado("Aparta tu lugar", 1250, gorda, (25, 23, 19))
+    centrado("Conferencias Empresariales · CANACO", 1338, normal, (70, 63, 56))
+    centrado("22 de octubre · 4:00 p.m.", 1394, normal, (70, 63, 56))
+    d.rounded_rectangle([(an - 620) / 2, 1476, (an + 620) / 2, 1556], radius=40, fill=ROJO)
+    centrado("Sólo 25 lugares", 1494, normal, BLANCO)
+    centrado("tijuana.ibero.mx", 1618, chica, (101, 92, 84))
     return t
 
 
